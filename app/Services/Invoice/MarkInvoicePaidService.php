@@ -21,7 +21,7 @@ class MarkInvoicePaidService
         Invoice $invoice,
         User $user,
     ): Invoice {
-        if ($invoice->status !== InvoiceStatus::Sent) {
+        if ($invoice->status !== InvoiceStatus::SENT) {
             throw new DomainException(
                 'Only sent invoices can be marked as paid.'
             );
@@ -29,12 +29,12 @@ class MarkInvoicePaidService
 
         return DB::transaction(function () use ($invoice, $user) {
             $invoice->update([
-                'status' => InvoiceStatus::Paid,
+                'status' => InvoiceStatus::PAID,
             ]);
 
             $this->timelineService->handle(
                 invoice: $invoice,
-                type: InvoiceTimelineType::PAID,
+                type: InvoiceTimelineType::PAYMENT_RECEIVED,
                 user: $user,
                 description: 'Invoice marked as paid.',
             );

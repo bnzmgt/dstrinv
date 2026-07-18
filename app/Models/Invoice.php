@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use App\Enums\InvoiceStatus;
 
 class Invoice extends Model
 {
@@ -66,5 +68,70 @@ class Invoice extends Model
     public function scopePaid(Builder $query): Builder
     {
         return $query->where('status', InvoiceStatus::PAID);
+    }
+
+    protected function subtotal(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->items->sum(
+                fn (InvoiceItem $item) => $item->qty * $item->unit_price
+            ),
+        );
+    }
+
+    protected function paymentTotal(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->payments->sum('amount'),
+        );
+    }
+
+    protected function outstandingAmount(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => max(
+                0,
+                $this->subtotal - $this->payment_total
+            ),
+        );
+    }
+
+    protected function total(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->subtotal,
+        );
+    }
+
+    protected function totalItems(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->items->count(),
+        );
+    }
+
+    protected function totalQuantity(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->items->sum('qty'),
+        );
+    }
+
+    protected function client(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->project->client,
+        );
+    }
+
+    protected function downloadFilename(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): string => sprintf(
+                'INV-%04d-%s.pdf',
+                $this->id,
+                now()->format('Ymd')
+            ),
+        );
     }
 }

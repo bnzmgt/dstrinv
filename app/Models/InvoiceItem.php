@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class InvoiceItem extends Model
 {
@@ -26,5 +27,12 @@ class InvoiceItem extends Model
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class);
+    }
+
+    protected function total(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): float => $this->qty * $this->unit_price,
+        );
     }
 }

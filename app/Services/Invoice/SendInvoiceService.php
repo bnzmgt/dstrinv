@@ -21,7 +21,7 @@ class SendInvoiceService
         Invoice $invoice,
         User $user,
     ): Invoice {
-        if ($invoice->status !== InvoiceStatus::Draft) {
+        if ($invoice->status !== InvoiceStatus::DRAFT) {
             throw new DomainException(
                 'Only draft invoices can be sent.'
             );
@@ -32,7 +32,7 @@ class SendInvoiceService
             $user
         ) {
             $invoice->update([
-                'status' => InvoiceStatus::Sent,
+                'status' => InvoiceStatus::SENT,
             ]);
 
             $this->timelineService->handle(

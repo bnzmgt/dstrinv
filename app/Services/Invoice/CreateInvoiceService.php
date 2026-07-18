@@ -33,7 +33,7 @@ class CreateInvoiceService
                 ...$attributes,
                 'project_id' => $project->id,
                 'invoice_number' => $this->generateInvoiceNumberService->handle(),
-                'status' => InvoiceStatus::Draft,
+                'status' => InvoiceStatus::DRAFT,
             ]);
 
             $this->timelineService->handle(
